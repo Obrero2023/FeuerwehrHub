@@ -82,7 +82,7 @@ pub struct CreateInspectionTemplateRequest {
 
 // ── Routen ─────────────────────────────────────────────────────────────────────
 
-pub fn routes() -> Router<AppState> {
+pub fn routes(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/templates/:vehicle_type", get(get_templates))
         .route("/templates", post(create_template))
@@ -91,7 +91,7 @@ pub fn routes() -> Router<AppState> {
         .route("/:inspection_id/items", get(get_inspection_items))
         .route("/:inspection_id/save", post(save_inspection))
         .layer(middleware::from_fn_with_state(
-            AppState::default(),
+            state,
             require_auth,
         ))
 }
@@ -150,7 +150,7 @@ async fn create_inspection(
     )
     .bind(req.vehicle_id)
     .bind(req.inspection_date)
-    .bind(claims.user_id)
+    .bind(claims.sub)
     .bind(&claims.username)
     .fetch_one(&state.db)
     .await?;
