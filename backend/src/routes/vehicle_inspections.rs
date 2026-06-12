@@ -71,11 +71,21 @@ pub struct InspectionItemData {
     pub comment: Option<String>,
 }
 
+#[derive(Deserialize)]
+pub struct CreateInspectionTemplateRequest {
+    pub vehicle_type: String,
+    pub item_name: String,
+    pub description: Option<String>,
+    pub priority: String,
+    pub display_order: i32,
+}
+
 // ── Routen ─────────────────────────────────────────────────────────────────────
 
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/templates/:vehicle_type", get(get_templates))
+        .route("/templates", post(create_template))
         .route("/", post(create_inspection))
         .route("/:inspection_id", get(get_inspection))
         .route("/:inspection_id/items", get(get_inspection_items))
@@ -103,6 +113,29 @@ async fn get_templates(
     .await?;
 
     Ok(Json(templates))
+}
+
+async fn create_template(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Json(req): Json<CreateInspectionTemplateRequest>,
+) -> AppResult<Json<InspectionTemplate>> {
+    let template = sqlx::query_as::<_, InspectionTemplate>(
+        "INSERT INTO vehicle_inspection_templates (vehicle_type, item_name, description, priority, display_order) 
+         VALUES ($1, $2, $3, $4, $5) 
+         ON CONFLICT (vehicle_type, item_name) DO UPDATE 
+           SET description = EXCLUDED.description, priority = EXCLUDED.priority, display_order = EXCLUDED.display_order 
+         RETURNING id, vehicle_type, item_name, description, priority, display_order"
+    )
+    .bind(&req.vehicle_type)
+    .bind(&req.item_name)
+    .bind(&req.description)
+    .bind(&req.priority)
+    .bind(req.display_order)
+    .fetch_one(&state.db)
+    .await?;
+
+    Ok(Json(template))
 }
 
 async fn create_inspection(

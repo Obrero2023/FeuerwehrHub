@@ -520,6 +520,7 @@ export const api = {
 
   // Fahrzeugprüfungen
   getInspectionTemplates: (vehicleType) => request('GET', `/inspections/templates/${vehicleType}`),
+  createInspectionTemplate: (body)         => request('POST', '/inspections/templates', body),
   createInspection:       (body)         => request('POST', '/inspections', body),
   getInspection:          (id)           => request('GET',  `/inspections/${id}`),
   getInspectionItems:     (id)           => request('GET',  `/inspections/${id}/items`),

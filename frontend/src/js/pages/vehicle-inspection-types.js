@@ -146,6 +146,7 @@ async function loadInspectionForVehicle(content, vehicle, templates) {
 }
 
 function renderInspectionForm(content, vehicleLabel, templates, inspection) {
+  const pumpRequired = templates.some(t => /pumpe/i.test(t.item_name));
   const itemsHtml = templates.map((t, idx) => `
     <div class="inspection-item">
       <div class="inspection-item__header">
@@ -156,15 +157,11 @@ function renderInspectionForm(content, vehicleLabel, templates, inspection) {
         <div class="inspection-item__status">
           <label>
             <input type="radio" name="status-${idx}" value="ok" checked>
-            <span>${icon('check-circle', 16)} OK</span>
+            <span>${icon('check-circle', 16)} Geprüft</span>
           </label>
           <label>
             <input type="radio" name="status-${idx}" value="missing">
-            <span>${icon('alert-circle', 16)} Fehlend</span>
-          </label>
-          <label>
-            <input type="radio" name="status-${idx}" value="defect">
-            <span>${icon('x-circle', 16)} Defekt</span>
+            <span>${icon('alert-circle', 16)} Fehlt</span>
           </label>
         </div>
         <textarea 
@@ -180,7 +177,8 @@ function renderInspectionForm(content, vehicleLabel, templates, inspection) {
     <div class="page-header">
       <div>
         <h2>Fahrzeugprüfung - ${vehicleLabel}</h2>
-        <p>Bitte markieren Sie alle Prüfpunkte als OK, Fehlend oder Defekt</p>
+        <p>Bitte prüfen Sie die aufgeführten Punkte und senden Sie die Prüfung anschließend ab.</p>
+        ${pumpRequired ? `<p class="text-muted">Achten Sie darauf, dass die Pumpe geprüft wird.</p>` : ''}
       </div>
     </div>
 
@@ -191,7 +189,7 @@ function renderInspectionForm(content, vehicleLabel, templates, inspection) {
 
       <div class="form-actions">
         <button type="button" class="btn btn--outline" id="btn-cancel">Abbrechen</button>
-        <button type="submit" class="btn btn--primary" id="btn-save">Speichern</button>
+        <button type="submit" class="btn btn--primary" id="btn-save">Prüfung senden</button>
       </div>
     </form>
   `;
