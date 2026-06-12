@@ -183,7 +183,7 @@ function buildShell() {
         ${showModule('lager.read', 'lager')           ? buildNavItem('lager',           'Lager',    lagerItems)    : ''}
         ${showModule('personal', 'personal')           ? buildNavItem('personal',        'Personal', personalItems) : ''}
         ${showModule('fahrzeuge', 'fahrzeuge')         ? buildNavItem('fahrzeuge',       'Technik & Geräte',fahrzeugeItems): ''}
-        ${showModule('fahrzeugpruefung', 'fahrzeugpruefung') ? buildNavItem('fahrzeugpruefung', 'Fahrzeugprüfung', fahrzeugpruefungItems) : ''}
+        ${buildNavItem('fahrzeugpruefung', 'Fahrzeugprüfung', fahrzeugpruefungItems)}
         ${showModule('einsatzberichte.read', 'einsatzberichte') ? buildNavItem('einsatzberichte', 'Einsätze', einsaetzeItems) : ''}
         ${showModule('verein', 'verein')               ? buildNavItem('verein',          'Verein',   vereinItems)   : ''}
 
