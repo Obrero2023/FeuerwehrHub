@@ -139,8 +139,8 @@ function buildShell() {
   ];
 
   const fahrzeugpruefungItems = [
-    { page: 'vehicle-inspection', label: 'Prüfungsübersicht', icon: icon('check-circle', 16) },
-    { page: 'inspection-templates', label: 'Prüfpunkte', icon: icon('settings', 16) },
+    { page: 'vehicle-inspection', label: 'Prüfungsübersicht', icon: icon('truck', 16) },
+    { page: 'inspection-templates', label: 'Prüfpunkte', icon: icon('truck', 16) },
     { page: 'hlf1-inspection', label: 'HLF-1', icon: icon('truck', 16) },
     { page: 'hlf2-inspection', label: 'HLF-2', icon: icon('truck', 16) },
     { page: 'mtf-inspection', label: 'MTF', icon: icon('truck', 16) },
