@@ -2,6 +2,7 @@ import { api } from '../api.js';
 import { renderShell, setShellInfo } from '../shell.js';
 import { toast } from '../toast.js';
 import { icon, renderIcons } from '../icons.js';
+import { esc } from '../utils.js';
 
 const VEHICLE_TYPES = {
   'hlf1-inspection': { key: 'hlf1', label: 'HLF-1', id: 'hlf1' },
@@ -39,27 +40,107 @@ async function createAndLoadInspection(vehicleType) {
       <div class="page-header">
         <div>
           <h2>Fahrzeugprüfung - ${VEHICLE_TYPES[vehicleType]?.label}</h2>
-          <p>Prüfpunkte für ${VEHICLE_TYPES[vehicleType]?.label}</p>
+          <p>Wählen Sie ein Fahrzeug aus, um die Prüfung zu starten.</p>
         </div>
       </div>
-      <div class="spinner">Lade Prüfungsdaten...</div>
+      <div class="spinner">Lade Fahrzeuge...</div>
     `;
 
-    // Fetch templates
-    const templates = await api.getInspectionTemplates(VEHICLE_TYPES[vehicleType].key);
-    
-    // Create a new inspection
+    const [templates, vehicles] = await Promise.all([
+      api.getInspectionTemplates(VEHICLE_TYPES[vehicleType].key),
+      api.getVehicles(),
+    ]);
+
+    const availableVehicles = vehicles.filter(v => v.vehicle_type === VEHICLE_TYPES[vehicleType].key);
+
+    if (!availableVehicles.length) {
+      content.innerHTML = `
+        <div class="page-header">
+          <div>
+            <h2>Fahrzeugprüfung - ${VEHICLE_TYPES[vehicleType]?.label}</h2>
+            <p>Für diesen Fahrzeugtyp sind keine Fahrzeuge vorhanden.</p>
+          </div>
+        </div>
+        <div class="content-card">
+          <p>Bitte legen Sie zunächst ein Fahrzeug vom Typ ${VEHICLE_TYPES[vehicleType]?.label} an.</p>
+        </div>
+      `;
+      return;
+    }
+
+    renderVehicleSelection(content, VEHICLE_TYPES[vehicleType].label, VEHICLE_TYPES[vehicleType].key, availableVehicles, templates);
+    renderIcons(content);
+  } catch (err) {
+    toast(`Fehler beim Laden der Prüfung: ${err.message}`, 'error');
+    console.error(err);
+  }
+}
+
+function renderVehicleSelection(content, vehicleLabel, vehicleTypeKey, vehicles, templates) {
+  const options = vehicles.map(v => `
+    <option value="${v.id}">${esc(v.name)}${v.short_name ? ` (${esc(v.short_name)})` : ''}</option>
+  `).join('');
+
+  content.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>Fahrzeugprüfung - ${vehicleLabel}</h2>
+        <p>Wählen Sie ein Fahrzeug aus, um die Prüfung zu starten.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="form-group">
+        <label>Fahrzeug</label>
+        <select id="inspection-vehicle-select" class="field">
+          ${options}
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" id="btn-cancel">Abbrechen</button>
+        <button type="button" class="btn btn--primary" id="btn-start-inspection">Prüfung starten</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-cancel').addEventListener('click', () => {
+    window.location.hash = '#/vehicle-inspection';
+  });
+
+  document.getElementById('btn-start-inspection').addEventListener('click', async () => {
+    const vehicleId = document.getElementById('inspection-vehicle-select').value;
+    const vehicle = vehicles.find(v => v.id === vehicleId);
+    if (!vehicle) {
+      toast('Bitte wählen Sie ein Fahrzeug aus.', 'error');
+      return;
+    }
+
+    await loadInspectionForVehicle(content, vehicle, templates);
+  });
+}
+
+async function loadInspectionForVehicle(content, vehicle, templates) {
+  try {
+    content.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2>Fahrzeugprüfung - ${vehicle.name}</h2>
+          <p>Prüfung für ${vehicle.name} starten.</p>
+        </div>
+      </div>
+      <div class="spinner">Erstelle Prüfung...</div>
+    `;
+
     const today = new Date().toISOString().split('T')[0];
     const inspection = await api.createInspection({
-      vehicle_id: '00000000-0000-0000-0000-000000000000', // TODO: Replace with actual vehicle ID
+      vehicle_id: vehicle.id,
       inspection_date: today,
     });
 
-    renderInspectionForm(content, VEHICLE_TYPES[vehicleType].label, templates, inspection);
+    renderInspectionForm(content, vehicle.name, templates, inspection);
     renderIcons(content);
-
   } catch (err) {
-    toast(`Fehler beim Laden der Prüfung: ${err.message}`, 'error');
+    toast(`Fehler beim Erstellen der Prüfung: ${err.message}`, 'error');
     console.error(err);
   }
 }
@@ -115,7 +196,6 @@ function renderInspectionForm(content, vehicleLabel, templates, inspection) {
     </form>
   `;
 
-  // Event handlers
   document.getElementById('btn-cancel').addEventListener('click', () => {
     window.location.hash = '#/vehicle-inspection';
   });
