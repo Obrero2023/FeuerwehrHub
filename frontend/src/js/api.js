@@ -517,4 +517,11 @@ export const api = {
   saveIntegrations:   (body) => request('PUT',  '/integrations', body),
   testDivera:         ()     => request('POST', '/integrations/divera/test'),
   importDivera:       ()     => request('POST', '/integrations/divera/import'),
+
+  // Fahrzeugprüfungen
+  getInspectionTemplates: (vehicleType) => request('GET', `/inspections/templates/${vehicleType}`),
+  createInspection:       (body)         => request('POST', '/inspections', body),
+  getInspection:          (id)           => request('GET',  `/inspections/${id}`),
+  getInspectionItems:     (id)           => request('GET',  `/inspections/${id}/items`),
+  saveInspection:         (id, body)     => request('POST', `/inspections/${id}/save`, body),
 };

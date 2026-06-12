@@ -15,5 +15,6 @@ pub mod selfservice;
 pub mod settings;
 pub mod termine;
 pub mod vehicles;
+pub mod vehicle_inspections;
 pub mod timeclock;
 pub mod verein;

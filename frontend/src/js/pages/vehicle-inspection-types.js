@@ -1,10 +1,12 @@
 import { api } from '../api.js';
 import { renderShell, setShellInfo } from '../shell.js';
+import { toast } from '../toast.js';
+import { icon, renderIcons } from '../icons.js';
 
-const TYPE_TITLES = {
-  'hlf1-inspection': 'HLF-1',
-  'hlf2-inspection': 'HLF-2',
-  'mtf-inspection': 'MTF',
+const VEHICLE_TYPES = {
+  'hlf1-inspection': { key: 'hlf1', label: 'HLF-1', id: 'hlf1' },
+  'hlf2-inspection': { key: 'hlf2', label: 'HLF-2', id: 'hlf2' },
+  'mtf-inspection':  { key: 'mtf',  label: 'MTF',  id: 'mtf' },
 };
 
 export async function renderVehicleInspectionOverview() {
@@ -17,42 +19,136 @@ export async function renderVehicleInspectionOverview() {
     <div class="page-header">
       <div>
         <h2>Fahrzeugprüfung</h2>
-        <p>Die Unterpunkte HLF-1, HLF-2 und MTF sind bereits eingebaut.</p>
+        <p>Wählen Sie ein Fahrzeug aus, um eine Prüfung durchzuführen.</p>
       </div>
     </div>
     <div class="content-card">
-      <p>Diese Seite ist aktuell leer und wird später mit Prüfungsinhalten gefüllt.</p>
+      <p>Diese Seite wird später mit einer Fahrzeugliste gefüllt.</p>
     </div>
   `;
 }
 
-export async function renderHlf1Inspection() {
-  await renderInspectionPage('hlf1-inspection');
+async function createAndLoadInspection(vehicleType) {
+  try {
+    const [settings, user] = await Promise.all([api.getSettings(), api.me()]);
+    setShellInfo(settings?.ff_name, user, settings?.modules);
+    renderShell('fahrzeugpruefung');
+
+    const content = document.getElementById('page-content');
+    content.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2>Fahrzeugprüfung - ${VEHICLE_TYPES[vehicleType]?.label}</h2>
+          <p>Prüfpunkte für ${VEHICLE_TYPES[vehicleType]?.label}</p>
+        </div>
+      </div>
+      <div class="spinner">Lade Prüfungsdaten...</div>
+    `;
+
+    // Fetch templates
+    const templates = await api.getInspectionTemplates(VEHICLE_TYPES[vehicleType].key);
+    
+    // Create a new inspection
+    const today = new Date().toISOString().split('T')[0];
+    const inspection = await api.createInspection({
+      vehicle_id: '00000000-0000-0000-0000-000000000000', // TODO: Replace with actual vehicle ID
+      inspection_date: today,
+    });
+
+    renderInspectionForm(content, VEHICLE_TYPES[vehicleType].label, templates, inspection);
+    renderIcons(content);
+
+  } catch (err) {
+    toast(`Fehler beim Laden der Prüfung: ${err.message}`, 'error');
+    console.error(err);
+  }
 }
 
-export async function renderHlf2Inspection() {
-  await renderInspectionPage('hlf2-inspection');
-}
+function renderInspectionForm(content, vehicleLabel, templates, inspection) {
+  const itemsHtml = templates.map((t, idx) => `
+    <div class="inspection-item">
+      <div class="inspection-item__header">
+        <label class="inspection-item__title">${t.item_name}</label>
+        ${t.description ? `<p class="inspection-item__desc">${t.description}</p>` : ''}
+      </div>
+      <div class="inspection-item__controls">
+        <div class="inspection-item__status">
+          <label>
+            <input type="radio" name="status-${idx}" value="ok" checked>
+            <span>${icon('check-circle', 16)} OK</span>
+          </label>
+          <label>
+            <input type="radio" name="status-${idx}" value="missing">
+            <span>${icon('alert-circle', 16)} Fehlend</span>
+          </label>
+          <label>
+            <input type="radio" name="status-${idx}" value="defect">
+            <span>${icon('x-circle', 16)} Defekt</span>
+          </label>
+        </div>
+        <textarea 
+          class="inspection-item__comment" 
+          name="comment-${idx}" 
+          placeholder="Kommentar (optional)"
+          rows="2"></textarea>
+      </div>
+    </div>
+  `).join('');
 
-export async function renderMtfInspection() {
-  await renderInspectionPage('mtf-inspection');
-}
-
-async function renderInspectionPage(pageKey) {
-  const [settings, user] = await Promise.all([api.getSettings(), api.me()]);
-  setShellInfo(settings?.ff_name, user, settings?.modules);
-  renderShell('fahrzeugpruefung');
-
-  const content = document.getElementById('page-content');
   content.innerHTML = `
     <div class="page-header">
       <div>
-        <h2>Fahrzeugprüfung - ${TYPE_TITLES[pageKey]}</h2>
-        <p>Diese Seite ist aktuell leer und wird später mit Prüfungsdetails gefüllt.</p>
+        <h2>Fahrzeugprüfung - ${vehicleLabel}</h2>
+        <p>Bitte markieren Sie alle Prüfpunkte als OK, Fehlend oder Defekt</p>
       </div>
     </div>
-    <div class="content-card">
-      <p>Hier werden später Prüfungen für ${TYPE_TITLES[pageKey]} angezeigt.</p>
-    </div>
+
+    <form id="inspection-form" class="inspection-form">
+      <div class="inspection-items">
+        ${itemsHtml}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--outline" id="btn-cancel">Abbrechen</button>
+        <button type="submit" class="btn btn--primary" id="btn-save">Speichern</button>
+      </div>
+    </form>
   `;
+
+  // Event handlers
+  document.getElementById('btn-cancel').addEventListener('click', () => {
+    window.location.hash = '#/vehicle-inspection';
+  });
+
+  document.getElementById('inspection-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const items = templates.map((t, idx) => ({
+      item_name: t.item_name,
+      status: document.querySelector(`input[name="status-${idx}"]:checked`)?.value || 'pending',
+      comment: document.querySelector(`textarea[name="comment-${idx}"]`)?.value || null,
+    }));
+
+    try {
+      await api.saveInspection(inspection.id, { items });
+      toast('Prüfung gespeichert', 'success');
+      setTimeout(() => {
+        window.location.hash = '#/vehicle-inspection';
+      }, 1000);
+    } catch (err) {
+      toast(`Fehler beim Speichern: ${err.message}`, 'error');
+    }
+  });
+}
+
+export async function renderHlf1Inspection() {
+  await createAndLoadInspection('hlf1-inspection');
+}
+
+export async function renderHlf2Inspection() {
+  await createAndLoadInspection('hlf2-inspection');
+}
+
+export async function renderMtfInspection() {
+  await createAndLoadInspection('mtf-inspection');
 }
