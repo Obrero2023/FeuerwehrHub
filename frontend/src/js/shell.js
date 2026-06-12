@@ -31,6 +31,10 @@ const PAGE_MODULE = {
   zeiterfassung:   'personal',
   vehicles:        'fahrzeuge',
   'vehicle-inspection': 'fahrzeugpruefung',
+  'inspection-templates': 'fahrzeugpruefung',
+  'hlf1-inspection': 'fahrzeugpruefung',
+  'hlf2-inspection': 'fahrzeugpruefung',
+  'mtf-inspection':  'fahrzeugpruefung',
   verein:          'verein',
 };
 
