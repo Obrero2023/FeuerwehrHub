@@ -11,22 +11,69 @@ const VEHICLE_TYPES = {
 };
 
 export async function renderVehicleInspectionOverview() {
-  const [settings, user] = await Promise.all([api.getSettings(), api.me()]);
-  setShellInfo(settings?.ff_name, user, settings?.modules);
-  renderShell('fahrzeugpruefung');
+  try {
+    const [settings, user, hlf1Templates, hlf2Templates, mtfTemplates] = await Promise.all([
+      api.getSettings(),
+      api.me(),
+      api.getInspectionTemplates('hlf1'),
+      api.getInspectionTemplates('hlf2'),
+      api.getInspectionTemplates('mtf'),
+    ]);
 
-  const content = document.getElementById('page-content');
-  content.innerHTML = `
-    <div class="page-header">
-      <div>
-        <h2>Fahrzeugprüfung</h2>
-        <p>Wählen Sie ein Fahrzeug aus, um eine Prüfung durchzuführen.</p>
+    setShellInfo(settings?.ff_name, user, settings?.modules);
+    renderShell('fahrzeugpruefung');
+
+    const content = document.getElementById('page-content');
+    content.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2>Fahrzeugprüfung</h2>
+          <p>Wählen Sie einen Fahrzeugtyp oder verwalten Sie Prüfpunkte.</p>
+        </div>
       </div>
-    </div>
-    <div class="content-card">
-      <p>Diese Seite wird später mit einer Fahrzeugliste gefüllt.</p>
-    </div>
-  `;
+
+      <div class="card-grid">
+        <div class="content-card content-card--clickable" data-route="#/hlf1-inspection">
+          <h3>HLF-1</h3>
+          <p>${hlf1Templates.length} Prüfpunkte verfügbar</p>
+        </div>
+        <div class="content-card content-card--clickable" data-route="#/hlf2-inspection">
+          <h3>HLF-2</h3>
+          <p>${hlf2Templates.length} Prüfpunkte verfügbar</p>
+        </div>
+        <div class="content-card content-card--clickable" data-route="#/mtf-inspection">
+          <h3>MTF</h3>
+          <p>${mtfTemplates.length} Prüfpunkte verfügbar</p>
+        </div>
+        <div class="content-card content-card--highlight content-card--clickable" data-route="#/inspection-templates">
+          <h3>Prüfpunkte verwalten</h3>
+          <p>Neue Prüfpunkt-Templates anlegen oder bestehende prüfen.</p>
+        </div>
+      </div>
+    `;
+
+    content.querySelectorAll('.content-card--clickable').forEach(card => {
+      card.addEventListener('click', () => {
+        window.location.hash = card.dataset.route;
+      });
+    });
+
+    renderIcons(content);
+  } catch (err) {
+    const content = document.getElementById('page-content');
+    content.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2>Fahrzeugprüfung</h2>
+          <p>Fehler beim Laden der Prüfungsübersicht.</p>
+        </div>
+      </div>
+      <div class="content-card">
+        <p>${esc(err.message)}</p>
+      </div>
+    `;
+    console.error(err);
+  }
 }
 
 async function createAndLoadInspection(vehicleType) {
