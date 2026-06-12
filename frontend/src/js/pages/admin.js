@@ -1598,7 +1598,7 @@ async function loadDienstausweise() {
 
 // ── Update-Check ──────────────────────────────────────────────────────────────
 
-const GITHUB_REPO = 'xpatrick096/FeuerwehrHub';
+const GITHUB_REPO = 'Obrero2023/FeuerwehrHub';
 
 async function checkForUpdate() {
   try {

@@ -8,7 +8,7 @@ Jedes Modul kann einzeln aktiviert werden — eine Wehr ohne Jugendfeuerwehr akt
 > **Aktuelle Version: v1.3.2**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Ko-Fi](https://img.shields.io/badge/Ko--Fi-Unterst%C3%BCtzen-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/xpatrick096)
+[![Ko-Fi](https://img.shields.io/badge/Ko--Fi-Unterst%C3%BCtzen-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/Obrero2023)
 
 ---
 
@@ -98,7 +98,7 @@ Kein Compiler, kein Build-Schritt, kein Cloud-Account — deine Daten bleiben be
 
 **Mit PostgreSQL (Standard, empfohlen für Einsteiger):**
 ```bash
-git clone https://github.com/xPatrick096/FeuerwehrHub.git
+git clone https://github.com/Obrero2023/FeuerwehrHub.git
 cd FeuerwehrHub && cp .env.example .env
 # DB_PASSWORD, JWT_SECRET, ENCRYPTION_KEY und FF_NAME in .env anpassen
 docker compose up -d
@@ -106,7 +106,7 @@ docker compose up -d
 
 **Externe Datenbank (eigener PostgreSQL-Server):**
 ```bash
-git clone https://github.com/xPatrick096/FeuerwehrHub.git
+git clone https://github.com/Obrero2023/FeuerwehrHub.git
 cd FeuerwehrHub && cp .env.example .env
 # DB_HOST, DB_PASSWORD, JWT_SECRET, ENCRYPTION_KEY und FF_NAME in .env anpassen
 # Den postgres-Service aus docker-compose.yml entfernen
@@ -197,7 +197,7 @@ docker compose up -d
 ```
 
 Datenbankmigrationen laufen beim Start automatisch durch.  
-Neue Versionen werden als [GitHub Releases](https://github.com/xPatrick096/FeuerwehrHub/releases) veröffentlicht.  
+Neue Versionen werden als [GitHub Releases](https://github.com/Obrero2023/FeuerwehrHub/releases) veröffentlicht.  
 **Empfehlung:** Im Repo auf **Watch → Custom → Releases** klicken, um E-Mail-Benachrichtigungen zu erhalten.
 
 ---
@@ -268,7 +268,7 @@ Dieses Projekt entsteht ehrenamtlich — für Feuerwehren, von Feuerwehrmenschen
 FeuerwehrHub ist ein privates Open-Source-Projekt, das in der Freizeit entsteht — für Feuerwehren, von einem Feuerwehrmitglied.
 Wer das Projekt unterstützen möchte, kann das gerne über Ko-Fi tun:
 
-[![Ko-Fi](https://img.shields.io/badge/Ko--Fi-Unterst%C3%BCtzen-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/xpatrick096)
+[![Ko-Fi](https://img.shields.io/badge/Ko--Fi-Unterst%C3%BCtzen-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/Obrero2023)
 
 ---
 
