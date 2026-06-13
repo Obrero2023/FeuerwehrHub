@@ -1,6 +1,6 @@
 -- Migration 059: Fahrzeugprüfungen (Inspektionen)
 
-CREATE TABLE IF NOT EXISTS vehicle_inspection_templates (
+CREATE TABLE IF NOT EXISTS vehicle_checklist_templates (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     vehicle_type    TEXT        NOT NULL, -- hlf1, hlf2, mtf
     item_name       TEXT        NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS vehicle_inspection_templates (
     UNIQUE(vehicle_type, item_name)
 );
 
-CREATE TABLE IF NOT EXISTS vehicle_inspections (
+CREATE TABLE IF NOT EXISTS vehicle_checklist (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     vehicle_id      UUID        NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
     inspection_date DATE        NOT NULL,
@@ -23,9 +23,9 @@ CREATE TABLE IF NOT EXISTS vehicle_inspections (
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS vehicle_inspection_items (
+CREATE TABLE IF NOT EXISTS vehicle_checklist_items (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    inspection_id   UUID        NOT NULL REFERENCES vehicle_inspections(id) ON DELETE CASCADE,
+    inspection_id   UUID        NOT NULL REFERENCES vehicle_checklist(id) ON DELETE CASCADE,
     template_id     UUID        REFERENCES vehicle_inspection_templates(id) ON DELETE SET NULL,
     item_name       TEXT        NOT NULL,
     status          TEXT        NOT NULL DEFAULT 'pending', -- pending, ok, missing, defect
@@ -34,22 +34,22 @@ CREATE TABLE IF NOT EXISTS vehicle_inspection_items (
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-DROP TRIGGER IF EXISTS vehicle_inspection_templates_updated_at ON vehicle_inspection_templates;
+DROP TRIGGER IF EXISTS vehicle_inspection_templates_updated_at ON vehicle_checklist_templates;
 CREATE TRIGGER vehicle_inspection_templates_updated_at
-    BEFORE UPDATE ON vehicle_inspection_templates
+    BEFORE UPDATE ON vehicle_checklist_templates
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-DROP TRIGGER IF EXISTS vehicle_inspections_updated_at ON vehicle_inspections;
+DROP TRIGGER IF EXISTS vehicle_inspections_updated_at ON vehicle_checklist;
 CREATE TRIGGER vehicle_inspections_updated_at
-    BEFORE UPDATE ON vehicle_inspections
+    BEFORE UPDATE ON vehicle_checklist
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-DROP TRIGGER IF EXISTS vehicle_inspection_items_updated_at ON vehicle_inspection_items;
+DROP TRIGGER IF EXISTS vehicle_inspection_items_updated_at ON vehicle_checklist_items;
 CREATE TRIGGER vehicle_inspection_items_updated_at
-    BEFORE UPDATE ON vehicle_inspection_items
+    BEFORE UPDATE ON vehicle_checklist_items
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Indices für bessere Abfrage-Performance
-CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_vehicle_id ON vehicle_inspections(vehicle_id);
-CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_date ON vehicle_inspections(inspection_date);
-CREATE INDEX IF NOT EXISTS idx_vehicle_inspection_items_inspection_id ON vehicle_inspection_items(inspection_id);
+CREATE INDEX IF NOT EXISTS idx_vehicle_checklist_vehicle_id ON vehicle_checklist(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_vehicle_checklist_date ON vehicle_checklist(inspection_date);
+CREATE INDEX IF NOT EXISTS idx_vehicle_checklist_items_inspection_id ON vehicle_checklist_items(inspection_id);
