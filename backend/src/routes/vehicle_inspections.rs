@@ -30,7 +30,6 @@ pub struct InspectionTemplate {
 pub struct Inspection {
     pub id:               Uuid,
     pub vehicle_id:      Uuid,
-    pub inspection_date: NaiveDate,
     pub inspected_by:    Option<Uuid>,
     pub inspected_by_name: Option<String>,
     pub completed_at:    Option<String>,
@@ -49,7 +48,6 @@ pub struct InspectionItem {
 #[derive(Deserialize)]
 pub struct CreateInspectionRequest {
     pub vehicle_id: Uuid,
-    pub inspection_date: NaiveDate,
 }
 
 #[derive(Deserialize)]
@@ -144,7 +142,7 @@ async fn create_inspection(
     Json(req): Json<CreateInspectionRequest>,
 ) -> AppResult<Json<Inspection>> {
     let inspection = sqlx::query_as::<_, Inspection>(
-        "INSERT INTO vehicle_inspections (vehicle_id, inspection_date, inspected_by, inspected_by_name) 
+        "INSERT INTO vehicle_checklist (vehicle_id, inspection_date, inspected_by, inspected_by_name) 
          VALUES ($1, $2, $3, $4) 
          RETURNING id, vehicle_id, inspection_date, inspected_by, inspected_by_name, completed_at"
     )
@@ -164,7 +162,7 @@ async fn get_inspection(
 ) -> AppResult<Json<Inspection>> {
     let inspection = sqlx::query_as::<_, Inspection>(
         "SELECT id, vehicle_id, inspection_date, inspected_by, inspected_by_name, completed_at 
-         FROM vehicle_inspections 
+         FROM vehicle_checklist 
          WHERE id = $1"
     )
     .bind(inspection_id)
