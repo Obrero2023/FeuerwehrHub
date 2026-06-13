@@ -1,6 +1,6 @@
 -- Migration 061: Add HLF inspection items for vehicle inspection templates
 
-INSERT INTO vehicle_inspection_templates (vehicle_type, item_name, description, priority, display_order) VALUES
+INSERT INTO vehicle_checklist_templates (vehicle_type, item_name, description, priority, display_order) VALUES
 ('hlf1', 'Wassertank voll', 'Wassertank auf korrekten Füllstand überprüfen', 'critical', 10),
 ('hlf1', 'Benzin Voll', 'Benzinfüllstand prüfen', 'critical', 20),
 ('hlf1', 'Pumpe', 'Wasserpumpe auf Funktionsfähigkeit prüfen', 'critical', 30),

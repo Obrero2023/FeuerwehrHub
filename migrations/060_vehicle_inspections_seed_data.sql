@@ -1,6 +1,6 @@
 -- Example inspection templates for vehicle types
 
-INSERT INTO vehicle_inspection_templates (vehicle_type, item_name, description, priority, display_order) VALUES
+INSERT INTO vehicle_checklist_templates (vehicle_type, item_name, description, priority, display_order) VALUES
 -- HLF-1 (Hilfeleistungslöschfahrzeug)
 ('hlf1', 'Wassertank voll', 'Wassertank auf korrekten Füllstand überprüfen', 'critical', 10),
 ('hlf1', 'Benzin Voll', 'Benzinfüllstand prüfen', 'critical', 25),
